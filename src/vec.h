@@ -5,6 +5,7 @@
 #pragma once
 
 #include <array>
+#include <ostream>
 
 namespace cdf_sampler
 {
