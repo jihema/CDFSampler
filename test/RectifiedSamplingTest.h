@@ -25,8 +25,8 @@ public:
 private:
     template<typename Sampler>
     static void check_sum(Sampler const& sampler,
-            typename Sampler::Domain const& domain, size_t const num_samples =
-                    10000);
+            typename Sampler::Domain const& domain, size_t const num_samples,
+            unsigned int const* const seed = nullptr);
 };
 
 }

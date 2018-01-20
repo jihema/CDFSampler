@@ -19,6 +19,12 @@ using box2f = box2<float>;
 using box2d = box2<double>;
 
 template<typename Scalar>
+std::ostream& operator<<(std::ostream& os, vec2<Scalar> const& x)
+{
+    return os << "{" << x[0] << ", " << x[1] << "}";
+}
+
+template<typename Scalar>
 vec2<Scalar> operator+(vec2<Scalar> const& x1, vec2<Scalar> const& x2)
 {
     return vec2<Scalar> { x1[0] + x2[0], x1[1] + x2[2] };

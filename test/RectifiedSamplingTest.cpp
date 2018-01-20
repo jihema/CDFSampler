@@ -36,16 +36,17 @@ void RectifiedSamplingTest<Scalar>::test_cdf_sampler_1D()
     }
 
     vec2<Scalar> const& domain = CDF1Sampler<Scalar>::max_domain;
+    size_t const num_samples = 100000;
 
     CDF1SamplerUniform<Scalar> cdf_sampler_uniform;
     cdf_sampler_uniform.init(vec2<Scalar> { -M_PI_2, M_PI_2 }, f);
     std::cout << "Uniform:\n";
-    check_sum(cdf_sampler_uniform, domain);
+    check_sum(cdf_sampler_uniform, domain, num_samples);
 
     CDF1SamplerNonUniform<Scalar> cdf_sampler_non_uniform;
     cdf_sampler_non_uniform.init(x, f);
     std::cout << "Non uniform:\n";
-    check_sum(cdf_sampler_non_uniform, domain);
+    check_sum(cdf_sampler_non_uniform, domain, num_samples);
 }
 
 template<typename Scalar>
@@ -114,29 +115,37 @@ void RectifiedSamplingTest<Scalar>::test_cdf_sampler_2D()
         v = 1. + 1. * uniform_01(random);
     }
 
-    box2<Scalar> const domain { 1.5, -1.5, 10, 10 };
+    box2<Scalar> const domain { -.5, -1.5, .25, .75 };
 
-    CDF2SamplerUniform<Scalar> cdf_sampler_uniform;
-    cdf_sampler_uniform.init(box2<Scalar> { -2., -2., 2., 2. },
-            2 * half_num_x + 1, 2 * half_num_y + 1, f);
-    std::cout << "Uniform:\n";
-    check_sum(cdf_sampler_uniform, domain);
+    size_t const num_samples = 100000;
+    unsigned int const seed = rd();
 
-    CDF2SamplerNonUniform<Scalar> cdf_sampler_non_uniform;
-    cdf_sampler_non_uniform.init(x, y, f);
-    std::cout << "Non uniform:\n";
-    check_sum(cdf_sampler_non_uniform, domain);
+    {
+        CDF2SamplerUniform<Scalar> cdf_sampler_uniform;
+        cdf_sampler_uniform.init(box2<Scalar> { -2., -2., 2., 2. },
+                2 * half_num_x + 1, 2 * half_num_y + 1, f);
+        std::cout << "Uniform:\n";
+        check_sum(cdf_sampler_uniform, domain, num_samples, &seed);
+    }
+    std::cout << '\n';
+    {
+        CDF2SamplerNonUniform<Scalar> cdf_sampler_non_uniform;
+        cdf_sampler_non_uniform.init(x, y, f);
+        std::cout << "Non uniform:\n";
+        check_sum(cdf_sampler_non_uniform, domain, num_samples, &seed);
+    }
 }
 
 template<typename Scalar>
 template<typename Sampler>
 void RectifiedSamplingTest<Scalar>::check_sum(Sampler const& sampler,
-        typename Sampler::Domain const& domain, size_t const num_samples)
+        typename Sampler::Domain const& domain, size_t const num_samples,
+        unsigned int const* const seed)
 {
     using Domain = typename Sampler::Domain;
 
     std::random_device rd; // Will be used to obtain a seed for the random number engine.
-    std::mt19937 random(rd()); // Standard mersenne_twister_engine seeded with rd().
+    std::mt19937 random(seed ? *seed : rd()); // Standard mersenne_twister_engine seeded with rd().
 
     Scalar sum = 0.;
     for (size_t i = 0; i < num_samples; ++i)

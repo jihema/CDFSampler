@@ -12,8 +12,8 @@ namespace cdf_sampler
 {
 
 template<typename Scalar>
-void CDF2SamplerUniform<Scalar>::init(Domain const& xy_range, size_t const x_size,
-        size_t const y_size, std::vector<Scalar> const& f)
+void CDF2SamplerUniform<Scalar>::init(Domain const& xy_range,
+        size_t const x_size, size_t const y_size, std::vector<Scalar> const& f)
 {
     assert(f.size() == x_size * y_size);
 
@@ -38,7 +38,7 @@ void CDF2SamplerUniform<Scalar>::init(Domain const& xy_range, size_t const x_siz
         for (size_t ix = 0; ix < x_size; ++ix)
         {
             Scalar delta_x;
-            if(ix == 0 || ix == x_size - 1)
+            if (ix == 0 || ix == x_size - 1)
             {
                 delta_x = 0.5 * step_x;
             }
@@ -47,16 +47,19 @@ void CDF2SamplerUniform<Scalar>::init(Domain const& xy_range, size_t const x_siz
                 delta_x = step_x;
             }
 
-            previous_cdf = static_cast<CDF2Sampler<Scalar>*>(this)->get_cdf(ix, 0) = previous_cdf
-                    + delta_x * delta_y
-                            * static_cast<CDF2Sampler<Scalar> const* const >(this)->get_pdf(ix, 0);
+            previous_cdf =
+                    static_cast<CDF2Sampler<Scalar>*>(this)->get_cdf(ix, 0) =
+                            previous_cdf
+                                    + delta_x * delta_y
+                                            * static_cast<CDF2Sampler<Scalar> const* const >(this)->get_pdf(
+                                                    ix, 0);
         }
     }
 
     for (size_t iy = 1; iy < y_size; ++iy)
     {
         Scalar delta_y;
-        if(iy == y_size - 1)
+        if (iy == y_size - 1)
         {
             delta_y = 0.5 * step_y;
         }
@@ -69,7 +72,7 @@ void CDF2SamplerUniform<Scalar>::init(Domain const& xy_range, size_t const x_siz
         for (size_t ix = 0; ix < x_size; ++ix)
         {
             Scalar delta_x;
-            if(ix == 0 || ix == x_size - 1)
+            if (ix == 0 || ix == x_size - 1)
             {
                 delta_x = 0.5 * step_x;
             }
@@ -80,8 +83,9 @@ void CDF2SamplerUniform<Scalar>::init(Domain const& xy_range, size_t const x_siz
 
             previous_cdf_x += delta_x * delta_y
                     * static_cast<CDF2Sampler<Scalar>*>(this)->get_pdf(ix, iy);
-            static_cast<CDF2Sampler<Scalar>*>(this)->get_cdf(ix, iy) = static_cast<CDF2Sampler<
-                    Scalar>*>(this)->get_cdf(ix, iy - 1) + previous_cdf_x;
+            static_cast<CDF2Sampler<Scalar>*>(this)->get_cdf(ix, iy) =
+                    static_cast<CDF2Sampler<Scalar>*>(this)->get_cdf(ix, iy - 1)
+                            + previous_cdf_x;
         }
     }
 
@@ -89,8 +93,8 @@ void CDF2SamplerUniform<Scalar>::init(Domain const& xy_range, size_t const x_siz
 }
 
 template<typename Scalar>
-vec2<Scalar> CDF2SamplerUniform<Scalar>::sample(vec2<Scalar> const& sxy, Scalar& pdf,
-        box2<Scalar> const& domain) const
+vec2<Scalar> CDF2SamplerUniform<Scalar>::sample(vec2<Scalar> const& sxy,
+        Scalar& pdf, box2<Scalar> const& domain) const
 {
     Scalar const sx = sxy[0];
     Scalar const sy = sxy[1];
@@ -116,17 +120,17 @@ vec2<Scalar> CDF2SamplerUniform<Scalar>::sample(vec2<Scalar> const& sxy, Scalar&
     size_t iy_max = -1;
     Scalar theta_y_max = std::numeric_limits<Scalar>::signaling_NaN();
 
-    Scalar const cdf00 = get_cdf(domain_x_min, domain_y_min, ix_min, theta_x_min, iy_min,
-            theta_y_min);
-    Scalar const cdf10 = get_cdf(domain_x_max, domain_y_min, ix_max, theta_x_max, iy_min,
-            theta_y_min);
-    Scalar const cdf01 = get_cdf(domain_x_min, domain_y_max, ix_min, theta_x_min, iy_max,
-            theta_y_max);
-    Scalar const cdf11 = get_cdf(domain_x_max, domain_y_max, ix_max, theta_x_max, iy_max,
-            theta_y_max);
+    Scalar const cdf00 = get_cdf(domain_x_min, domain_y_min, ix_min,
+            theta_x_min, iy_min, theta_y_min);
+    Scalar const cdf10 = get_cdf(domain_x_max, domain_y_min, ix_max,
+            theta_x_max, iy_min, theta_y_min);
+    Scalar const cdf01 = get_cdf(domain_x_min, domain_y_max, ix_min,
+            theta_x_min, iy_max, theta_y_max);
+    Scalar const cdf11 = get_cdf(domain_x_max, domain_y_max, ix_max,
+            theta_x_max, iy_max, theta_y_max);
 
     Scalar const domain_proba = (cdf11 - cdf10) + (cdf00 - cdf01);
-    if(domain_proba < std::numeric_limits<Scalar>::epsilon())
+    if (domain_proba < std::numeric_limits<Scalar>::epsilon())
     {
         pdf = 0;
         return 0.5 * (domain[0] + domain[1]);
@@ -135,7 +139,7 @@ vec2<Scalar> CDF2SamplerUniform<Scalar>::sample(vec2<Scalar> const& sxy, Scalar&
     size_t hit_y_first;
     Scalar hit_y_theta;
 
-    if(iy_min == iy_max) // First case: both y_min and y_max are in the same interval.
+    if (iy_min == iy_max) // First case: both y_min and y_max are in the same interval.
     {
         hit_y_first = iy_min;
         hit_y_theta = theta_y_min + sy * (theta_y_max - theta_y_min);
@@ -150,22 +154,23 @@ vec2<Scalar> CDF2SamplerUniform<Scalar>::sample(vec2<Scalar> const& sxy, Scalar&
         cdfy.push_back(0.);
         for (auto iy = iy_min; iy < iy_max; ++iy)
         {
-            Scalar const cdf0y = this->get_cdf(ix_min, iy);
-            Scalar const cdf1y = this->get_cdf(ix_max, iy);
+            Scalar const cdf0y = this->get_cdf(ix_min, theta_x_min, iy + 1, 0.);
+            Scalar const cdf1y = this->get_cdf(ix_max, theta_x_max, iy + 1, 0.);
             cdfy.push_back((cdf1y - cdf10) + (cdf00 - cdf0y));
         }
         cdfy.push_back(domain_proba);
 
         // Sampling on the y-axis. This gives us an interpol on the extended y-positions vector.
-        Interpol<std::vector<Scalar>> const yay = find_range(sy * cdfy.back(), cdfy);
+        Interpol<std::vector<Scalar>> const yay = find_range(sy * cdfy.back(),
+                cdfy);
 
         // Convert the interpol to one on the cdf positions vector.
-        if(yay.m_first == cdfy.begin()) // Hit below first y-range position.
+        if (yay.m_first == cdfy.begin()) // Hit below first y-range position.
         {
             hit_y_first = iy_min;
             hit_y_theta = theta_y_min + yay.m_theta * (1 - theta_y_min);
         }
-        else if(yay.m_first == cdfy.end() - 2)
+        else if (yay.m_first == cdfy.end() - 2)
         {
             hit_y_first = iy_max;
             hit_y_theta = yay.m_theta * theta_y_max;
@@ -177,14 +182,14 @@ vec2<Scalar> CDF2SamplerUniform<Scalar>::sample(vec2<Scalar> const& sxy, Scalar&
         }
     }
 
-    result[1] = linear_interpolation(interleaved_y(hit_y_first), interleaved_y(hit_y_first + 1),
-            hit_y_theta);
+    result[1] = linear_interpolation(interleaved_y(hit_y_first),
+            interleaved_y(hit_y_first + 1), hit_y_theta);
 
     // Still need to sample in x.
     size_t hit_x_first;
     Scalar hit_x_theta;
 
-    if(ix_min == ix_max) // First case: both x_min and x_max are in the same interval.
+    if (ix_min == ix_max) // First case: both x_min and x_max are in the same interval.
     {
         hit_x_first = ix_min;
         hit_x_theta = theta_x_min + sx * (theta_x_max - theta_x_min);
@@ -201,21 +206,22 @@ vec2<Scalar> CDF2SamplerUniform<Scalar>::sample(vec2<Scalar> const& sxy, Scalar&
         Scalar const cdf0y = band_cdf(ix_min, theta_x_min, hit_y_first);
         for (auto ix = ix_min; ix < ix_max; ++ix)
         {
-            Scalar const cdfxy = band_cdf(ix, 0., hit_y_first);
+            Scalar const cdfxy = band_cdf(ix + 1, 0., hit_y_first);
             cdfx.push_back(cdfxy - cdf0y);
         }
         Scalar const cdf1y = band_cdf(ix_max, theta_x_max, hit_y_first);
         cdfx.push_back(cdf1y - cdf0y);
 
-        Interpol<std::vector<Scalar>> const xax = find_range(sx * cdfx.back(), cdfx);
+        Interpol<std::vector<Scalar>> const xax = find_range(sx * cdfx.back(),
+                cdfx);
 
         // Convert the interpol to one on the cdf positions vector.
-        if(xax.m_first == cdfx.begin()) // Hit below first x-range position.
+        if (xax.m_first == cdfx.begin()) // Hit below first x-range position.
         {
             hit_x_first = ix_min;
             hit_x_theta = theta_x_min + xax.m_theta * (1 - theta_x_min);
         }
-        else if(xax.m_first == cdfx.end() - 2)
+        else if (xax.m_first == cdfx.end() - 2)
         {
             hit_x_first = ix_max;
             hit_x_theta = xax.m_theta * theta_x_max;
@@ -227,8 +233,8 @@ vec2<Scalar> CDF2SamplerUniform<Scalar>::sample(vec2<Scalar> const& sxy, Scalar&
         }
     }
 
-    result[0] = linear_interpolation(interleaved_x(hit_x_first), interleaved_x(hit_x_first + 1),
-            hit_x_theta);
+    result[0] = linear_interpolation(interleaved_x(hit_x_first),
+            interleaved_x(hit_x_first + 1), hit_x_theta);
 
     pdf = get_pdf(hit_x_first, hit_y_first) / domain_proba;
 
@@ -236,8 +242,8 @@ vec2<Scalar> CDF2SamplerUniform<Scalar>::sample(vec2<Scalar> const& sxy, Scalar&
 }
 
 template<typename Scalar>
-void CDF2SamplerNonUniform<Scalar>::init(std::vector<Scalar> const& x, std::vector<Scalar> const& y,
-        std::vector<Scalar> const& f)
+void CDF2SamplerNonUniform<Scalar>::init(std::vector<Scalar> const& x,
+        std::vector<Scalar> const& y, std::vector<Scalar> const& f)
 {
     assert(f.size() == x.size() * y.size());
 
@@ -259,11 +265,11 @@ void CDF2SamplerNonUniform<Scalar>::init(std::vector<Scalar> const& x, std::vect
         for (size_t ix = 0; ix < m_x.size(); ++ix)
         {
             Scalar delta_x;
-            if(ix == 0)
+            if (ix == 0)
             {
                 delta_x = m_x[ix + 1] - m_x[ix];
             }
-            else if(ix == m_x.size() - 1)
+            else if (ix == m_x.size() - 1)
             {
                 delta_x = m_x[ix] - m_x[ix - 1];
             }
@@ -272,16 +278,19 @@ void CDF2SamplerNonUniform<Scalar>::init(std::vector<Scalar> const& x, std::vect
                 delta_x = m_x[ix + 1] - m_x[ix - 1];
             }
 
-            previous_cdf = static_cast<CDF2Sampler<Scalar>*>(this)->get_cdf(ix, 0) = previous_cdf
-                    + 0.25 * delta_x * delta_y
-                            * static_cast<CDF2Sampler<Scalar> const* const >(this)->get_pdf(ix, 0);
+            previous_cdf =
+                    static_cast<CDF2Sampler<Scalar>*>(this)->get_cdf(ix, 0) =
+                            previous_cdf
+                                    + 0.25 * delta_x * delta_y
+                                            * static_cast<CDF2Sampler<Scalar> const* const >(this)->get_pdf(
+                                                    ix, 0);
         }
     }
 
     for (size_t iy = 1; iy < m_y.size(); ++iy)
     {
         Scalar delta_y;
-        if(iy == m_y.size() - 1)
+        if (iy == m_y.size() - 1)
         {
             delta_y = m_y[iy] - m_y[iy - 1];
         }
@@ -294,11 +303,11 @@ void CDF2SamplerNonUniform<Scalar>::init(std::vector<Scalar> const& x, std::vect
         for (size_t ix = 0; ix < m_x.size(); ++ix)
         {
             Scalar delta_x;
-            if(ix == 0)
+            if (ix == 0)
             {
                 delta_x = m_x[ix + 1] - m_x[ix];
             }
-            else if(ix == m_x.size() - 1)
+            else if (ix == m_x.size() - 1)
             {
                 delta_x = m_x[ix] - m_x[ix - 1];
             }
@@ -309,8 +318,9 @@ void CDF2SamplerNonUniform<Scalar>::init(std::vector<Scalar> const& x, std::vect
 
             previous_cdf_x += 0.25 * delta_x * delta_y
                     * static_cast<CDF2Sampler<Scalar>*>(this)->get_pdf(ix, iy);
-            static_cast<CDF2Sampler<Scalar>*>(this)->get_cdf(ix, iy) = static_cast<CDF2Sampler<
-                    Scalar>*>(this)->get_cdf(ix, iy - 1) + previous_cdf_x;
+            static_cast<CDF2Sampler<Scalar>*>(this)->get_cdf(ix, iy) =
+                    static_cast<CDF2Sampler<Scalar>*>(this)->get_cdf(ix, iy - 1)
+                            + previous_cdf_x;
         }
     }
 
@@ -318,8 +328,8 @@ void CDF2SamplerNonUniform<Scalar>::init(std::vector<Scalar> const& x, std::vect
 }
 
 template<typename Scalar>
-vec2<Scalar> CDF2SamplerNonUniform<Scalar>::sample(vec2<Scalar> const& sxy, Scalar& pdf,
-        box2<Scalar> const& domain) const
+vec2<Scalar> CDF2SamplerNonUniform<Scalar>::sample(vec2<Scalar> const& sxy,
+        Scalar& pdf, box2<Scalar> const& domain) const
 {
     Scalar const sx = sxy[0];
     Scalar const sy = sxy[1];
@@ -330,10 +340,14 @@ vec2<Scalar> CDF2SamplerNonUniform<Scalar>::sample(vec2<Scalar> const& sxy, Scal
     vec2<Scalar> result;
 
     // TODO: we could cache the following, depending only on the domain.
-    Interpol<std::vector<Scalar>> const x_min = find_range(domain[0][0], m_interleaved_x);
-    Interpol<std::vector<Scalar>> const x_max = find_range(domain[1][0], m_interleaved_x);
-    Interpol<std::vector<Scalar>> const y_min = find_range(domain[0][1], m_interleaved_y);
-    Interpol<std::vector<Scalar>> const y_max = find_range(domain[1][1], m_interleaved_y);
+    Interpol<std::vector<Scalar>> const x_min = find_range(domain[0][0],
+            m_interleaved_x);
+    Interpol<std::vector<Scalar>> const x_max = find_range(domain[1][0],
+            m_interleaved_x);
+    Interpol<std::vector<Scalar>> const y_min = find_range(domain[0][1],
+            m_interleaved_y);
+    Interpol<std::vector<Scalar>> const y_max = find_range(domain[1][1],
+            m_interleaved_y);
 
     Scalar const cdf00 = get_cdf(x_min, y_min);
     Scalar const cdf10 = get_cdf(x_max, y_min);
@@ -341,7 +355,7 @@ vec2<Scalar> CDF2SamplerNonUniform<Scalar>::sample(vec2<Scalar> const& sxy, Scal
     Scalar const cdf11 = get_cdf(x_max, y_max);
 
     Scalar const domain_proba = (cdf11 - cdf10) + (cdf00 - cdf01);
-    if(domain_proba < std::numeric_limits<Scalar>::epsilon())
+    if (domain_proba < std::numeric_limits<Scalar>::epsilon())
     {
         pdf = 0;
         return 0.5 * (domain[0] + domain[1]);
@@ -349,7 +363,7 @@ vec2<Scalar> CDF2SamplerNonUniform<Scalar>::sample(vec2<Scalar> const& sxy, Scal
 
     Interpol<std::vector<Scalar>> hit_y; // This will receive an interpol for the sample in the interleaved y range.
 
-    if(y_min.m_first == y_max.m_first) // First case: both y_min and y_max are in the same interval.
+    if (y_min.m_first == y_max.m_first) // First case: both y_min and y_max are in the same interval.
     {
         hit_y.m_first = y_min.m_first;
         hit_y.m_theta = y_min.m_theta + sy * (y_max.m_theta - y_min.m_theta);
@@ -372,15 +386,16 @@ vec2<Scalar> CDF2SamplerNonUniform<Scalar>::sample(vec2<Scalar> const& sxy, Scal
         cdfy.push_back(domain_proba);
 
         // Sampling on the y-axis. This gives us an interpol on the extended y-positions vector.
-        Interpol<std::vector<Scalar>> const yay = find_range(sy * cdfy.back(), cdfy);
+        Interpol<std::vector<Scalar>> const yay = find_range(sy * cdfy.back(),
+                cdfy);
 
         // Convert the interpol to one on the cdf positions vector.
-        if(yay.m_first == cdfy.begin()) // Hit below first y-range position.
+        if (yay.m_first == cdfy.begin()) // Hit below first y-range position.
         {
             hit_y.m_first = y_min.m_first;
             hit_y.m_theta = y_min.m_theta + yay.m_theta * (1 - y_min.m_theta);
         }
-        else if(yay.m_first == cdfy.end() - 2)
+        else if (yay.m_first == cdfy.end() - 2)
         {
             hit_y.m_first = y_max.m_first;
             hit_y.m_theta = yay.m_theta * y_max.m_theta;
@@ -397,7 +412,7 @@ vec2<Scalar> CDF2SamplerNonUniform<Scalar>::sample(vec2<Scalar> const& sxy, Scal
     // Still need to sample in x.
     Interpol<std::vector<Scalar>> hit_x; // This will receive an interpol for the sample in the interleaved x range.
 
-    if(x_min.m_first == x_max.m_first) // First case: both x_min and x_max are in the same interval.
+    if (x_min.m_first == x_max.m_first) // First case: both x_min and x_max are in the same interval.
     {
         hit_x.m_first = x_min.m_first;
         hit_x.m_theta = x_min.m_theta + sx * (x_max.m_theta - x_min.m_theta);
@@ -421,15 +436,16 @@ vec2<Scalar> CDF2SamplerNonUniform<Scalar>::sample(vec2<Scalar> const& sxy, Scal
         Scalar const cdf1y = band_cdf(x_max, hit_y.m_first);
         cdfx.push_back(cdf1y - cdf0y);
 
-        Interpol<std::vector<Scalar>> const xax = find_range(sx * cdfx.back(), cdfx);
+        Interpol<std::vector<Scalar>> const xax = find_range(sx * cdfx.back(),
+                cdfx);
 
         // Convert the interpol to one on the cdf positions vector.
-        if(xax.m_first == cdfx.begin()) // Hit below first x-range position.
+        if (xax.m_first == cdfx.begin()) // Hit below first x-range position.
         {
             hit_x.m_first = x_min.m_first;
             hit_x.m_theta = x_min.m_theta + xax.m_theta * (1 - x_min.m_theta);
         }
-        else if(xax.m_first == cdfx.end() - 2)
+        else if (xax.m_first == cdfx.end() - 2)
         {
             hit_x.m_first = x_max.m_first;
             hit_x.m_theta = xax.m_theta * x_max.m_theta;
@@ -452,10 +468,14 @@ template<typename Scalar>
 Scalar CDF2SamplerNonUniform<Scalar>::compute_pdf(vec2<Scalar> const& result,
         box2<Scalar> const& domain) const
 {
-    Interpol<std::vector<Scalar>> const x_min = find_range(domain[0][0], m_interleaved_x);
-    Interpol<std::vector<Scalar>> const x_max = find_range(domain[1][0], m_interleaved_x);
-    Interpol<std::vector<Scalar>> const y_min = find_range(domain[0][1], m_interleaved_y);
-    Interpol<std::vector<Scalar>> const y_max = find_range(domain[1][1], m_interleaved_y);
+    Interpol<std::vector<Scalar>> const x_min = find_range(domain[0][0],
+            m_interleaved_x);
+    Interpol<std::vector<Scalar>> const x_max = find_range(domain[1][0],
+            m_interleaved_x);
+    Interpol<std::vector<Scalar>> const y_min = find_range(domain[0][1],
+            m_interleaved_y);
+    Interpol<std::vector<Scalar>> const y_max = find_range(domain[1][1],
+            m_interleaved_y);
 
     Scalar const cdf00 = get_cdf(x_min, y_min);
     Scalar const cdf10 = get_cdf(x_max, y_min);
@@ -463,13 +483,15 @@ Scalar CDF2SamplerNonUniform<Scalar>::compute_pdf(vec2<Scalar> const& result,
     Scalar const cdf11 = get_cdf(x_max, y_max);
 
     Scalar const domain_proba = (cdf11 - cdf10) + (cdf00 - cdf01);
-    if(domain_proba < std::numeric_limits<Scalar>::epsilon())
+    if (domain_proba < std::numeric_limits<Scalar>::epsilon())
     {
         return 0.;
     }
 
-    Interpol<std::vector<Scalar>> const hit_x = find_range(result[0], m_interleaved_x);
-    Interpol<std::vector<Scalar>> const hit_y = find_range(result[1], m_interleaved_y);
+    Interpol<std::vector<Scalar>> const hit_x = find_range(result[0],
+            m_interleaved_x);
+    Interpol<std::vector<Scalar>> const hit_y = find_range(result[1],
+            m_interleaved_y);
 
     return get_pdf(hit_x, hit_y) / domain_proba;
 }

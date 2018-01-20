@@ -32,7 +32,8 @@ public:
 
     virtual void init(Domain const& x_range, std::vector<Scalar> const& f) = 0;
 
-    virtual Scalar sample(Scalar const in_s, Scalar& pdf, Domain const& domain) const = 0;
+    virtual Scalar sample(Scalar const in_s, Scalar& pdf,
+            Domain const& domain) const = 0;
 
     virtual Scalar interleaved_x(size_t ix) const = 0;
 
@@ -74,23 +75,25 @@ public:
 
     inline Scalar interleaved_x(size_t ix) const override
     {
-        if(ix == 0)
+        if (ix == 0)
         {
             return m_x_min;
         }
-        else if(ix == this->m_cdf.size())
+        else if (ix == this->m_cdf.size())
         {
             return m_x_max;
         }
         else
         {
-            return m_x_min + (ix - 0.5) * (m_x_max - m_x_min) / (this->m_cdf.size() - 1);
+            return m_x_min
+                    + (ix - 0.5) * (m_x_max - m_x_min)
+                            / (this->m_cdf.size() - 1);
         }
     }
 
     Domain definition_domain() const override
     {
-        return Domain{m_x_min, m_x_max};
+        return Domain { m_x_min, m_x_max };
     }
 
 private:
@@ -113,22 +116,23 @@ private:
     {
         assert(x >= m_x_min && x <= m_x_max);
 
-        if(x == m_x_max)
+        if (x == m_x_max)
         {
             ix = this->m_cdf.size() - 1;
             theta = 1.;
             return this->m_cdf.back();
         }
 
-        Scalar const scaled_x = (this->m_cdf.size() - 1) * (x - m_x_min) / (m_x_max - m_x_min); // in [0, m_pdf.size()-1).
+        Scalar const scaled_x = (this->m_cdf.size() - 1) * (x - m_x_min)
+                / (m_x_max - m_x_min); // in [0, m_pdf.size()-1).
 
         ix = std::floor(scaled_x + 0.5); // in {0, ..., m_cdf.size()-1}
 
-        if(ix == 0)
+        if (ix == 0)
         {
             theta = 2. * scaled_x;
         }
-        else if(ix == this->m_cdf.size() - 1)
+        else if (ix == this->m_cdf.size() - 1)
         {
             theta = 2 * (scaled_x - ix) + 1.;
         }
@@ -137,7 +141,8 @@ private:
             theta = scaled_x - ix + 0.5;
         }
 
-        return linear_interpolation(ix == 0 ? 0 : this->m_cdf[ix - 1], this->m_cdf[ix], theta);
+        return linear_interpolation(ix == 0 ? 0 : this->m_cdf[ix - 1],
+                this->m_cdf[ix], theta);
     }
 
     Scalar m_x_min;
@@ -154,7 +159,8 @@ public:
     {
     }
 
-    void init(vec2<Scalar> const& x_range, std::vector<Scalar> const& f) override
+    void init(vec2<Scalar> const& x_range, std::vector<Scalar> const& f)
+            override
     {
         std::vector<Scalar> x(f.size());
         Scalar const step = (x_range[1] - x_range[0]) / (f.size() - 1);
@@ -178,18 +184,21 @@ public:
 
     inline Domain definition_domain() const override
     {
-        return vec2<Scalar>{m_x.front(), m_x.back()};
+        return vec2<Scalar> { m_x.front(), m_x.back() };
     }
 
 private:
 
     inline Scalar get_cdf(Interpol<std::vector<Scalar>> const& x) const
     {
-        assert(x.m_first >= m_interleaved_x.begin() && x.m_first < m_interleaved_x.end() - 1);
+        assert(
+                x.m_first >= m_interleaved_x.begin()
+                        && x.m_first < m_interleaved_x.end() - 1);
 
         size_t const xi = x.m_first - m_interleaved_x.begin();
 
-        Scalar const cdf0 = (xi == 0) ? 0. : CDF1Sampler<Scalar>::get_cdf(xi - 1);
+        Scalar const cdf0 =
+                (xi == 0) ? 0. : CDF1Sampler<Scalar>::get_cdf(xi - 1);
         Scalar const cdf1 = CDF1Sampler<Scalar>::get_cdf(xi);
 
         return linear_interpolation(cdf0, cdf1, x.m_theta);
@@ -197,7 +206,9 @@ private:
 
     inline Scalar get_pdf(Interpol<std::vector<Scalar>> const& x) const
     {
-        assert(m_interleaved_x.begin() <= x.m_first && x.m_first < m_interleaved_x.end());
+        assert(
+                m_interleaved_x.begin() <= x.m_first
+                        && x.m_first < m_interleaved_x.end());
 
         size_t const idx_x = x.m_first - m_interleaved_x.begin();
 

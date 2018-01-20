@@ -230,6 +230,14 @@ private:
         return this->m_cdf[iy * this->m_x_size + ix];
     }
 
+    inline Scalar get_cdf(size_t const ix, Scalar const theta_x,
+            size_t const iy, Scalar const theta_y) const
+    {
+        std::array<Scalar, 4> const cdfs = this->corner_cdfs(ix, iy); // In xy order: 00, 10, 01, 11.
+        return bilinear_interpolation(cdfs[0], cdfs[1], cdfs[2], cdfs[3],
+                theta_x, theta_y);
+    }
+
     inline Scalar get_pdf(size_t ix, size_t iy) const
     {
         return this->m_pdf[iy * this->m_x_size + ix];
