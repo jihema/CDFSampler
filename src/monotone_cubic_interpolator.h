@@ -6,7 +6,7 @@
 
 #include <vector>
 
-namespace dneg
+namespace cdf_sampler
 {
 
 /**
@@ -20,7 +20,8 @@ class MonotoneCubicInterpolator
 {
 public:
 
-    MonotoneCubicInterpolator(const std::vector<Scalar> & x, const std::vector<Scalar> & f);
+    MonotoneCubicInterpolator(const std::vector<Scalar> & x,
+            const std::vector<Scalar> & f);
 
     Scalar evaluate(Scalar x) const;
 

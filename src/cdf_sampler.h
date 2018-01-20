@@ -4,10 +4,11 @@
 
 #pragma once
 
-#include <vector>
+#include <stddef.h>
 #include <limits>
+#include <vector>
 
-namespace dneg
+namespace cdf_sampler
 {
 
 /**
@@ -16,7 +17,6 @@ namespace dneg
 template<typename Scalar>
 class CDFSampler
 {
-
 protected:
 
     CDFSampler() :
@@ -33,12 +33,10 @@ protected:
         std::vector<Scalar> interleaved(x.size() + 1);
 
         interleaved[0] = x[0];
-
         for (size_t ix = 1; ix < x.size(); ++ix)
         {
             interleaved[ix] = 0.5 * (x[ix - 1] + x[ix]);
         }
-
         interleaved.back() = x.back();
 
         return interleaved;
@@ -56,17 +54,17 @@ protected:
     }
 
     /**
-     * Contains the pdf, integral normalized to 1.
+     * Contains the pdf, integral normalised to 1.
      */
     std::vector<Scalar> m_pdf;
 
     /**
-     * Contains the cdf, back() normalized to 1.
+     * Contains the cdf, back() normalised to 1.
      */
     std::vector<Scalar> m_cdf;
 
     /**
-     * Records the integral of the original input function (a.k.a. pdf before normalization).
+     * Records the integral of the original input function (a.k.a. pdf before normalisation).
      */
     Scalar m_sum;
 };

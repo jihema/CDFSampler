@@ -5,13 +5,10 @@
 #pragma once
 
 #include <random>
-#include <gmath_vec2.h>
-#include <gmath_vec3.h>
+#include "../src/vec.h"
 
-namespace dneg
+namespace cdf_sampler
 {
-
-using namespace light;
 
 namespace test
 {
@@ -34,10 +31,10 @@ template<typename Scalar>
 class RandomVector<Scalar, 2>
 {
 public:
-    static GMathVec2<Scalar> get(std::mt19937& random)
+    static vec2<Scalar> get(std::mt19937& random)
     {
-        std::uniform_real_distribution<> uniform_01;
-        return GMathVec2<Scalar>(uniform_01(random), uniform_01(random));
+        std::uniform_real_distribution<Scalar> uniform_01;
+        return vec2 < Scalar > {uniform_01(random), uniform_01(random)};
     }
 };
 
@@ -45,10 +42,11 @@ template<typename Scalar>
 class RandomVector<Scalar, 3>
 {
 public:
-    static GMathVec3<Scalar> get(std::mt19937& random)
+    static vec3<Scalar> get(std::mt19937& random)
     {
-        std::uniform_real_distribution<> uniform_01;
-        return GMathVec3<Scalar>(uniform_01(random), uniform_01(random), uniform_01(random));
+        std::uniform_real_distribution<Scalar> uniform_01;
+        return vec3<Scalar> { uniform_01(random), uniform_01(random),
+                uniform_01(random) };
     }
 };
 

@@ -4,29 +4,27 @@
 
 #pragma once
 
+#include <stddef.h>
+#include <cassert>
 #include <vector>
-#include <stdint.h>
-#include <assert.h>
-#include <iostream>
-#include <limits>
 #include <cmath>
 
-#include <gmath_vec2.h>
-
-#include "interpol.h"
 #include "cdf_sampler.h"
+#include "interpol.h"
+#include "vec.h"
 
-namespace dneg
+namespace cdf_sampler
 {
 
 template<typename Scalar>
 class CDF1Sampler: public CDFSampler<Scalar>
 {
 public:
-    using Domain = GMathVec2<Scalar>;
-    static constexpr int dimension = 1;
 
+    using Domain = vec2<Scalar>;
     static Domain const max_domain;
+
+    static constexpr int dimension = 1;
 
     virtual ~CDF1Sampler()
     {
@@ -34,27 +32,27 @@ public:
 
     virtual void init(Domain const& x_range, std::vector<Scalar> const& f) = 0;
 
-    virtual Scalar sample(Scalar const s0, Scalar& pdf, Domain const& domain) const = 0;
+    virtual Scalar sample(Scalar const in_s, Scalar& pdf, Domain const& domain) const = 0;
 
-    virtual Scalar interleaved_x(size_t xi) const = 0;
+    virtual Scalar interleaved_x(size_t ix) const = 0;
 
     virtual Domain definition_domain() const = 0;
 
 protected:
 
-    inline Scalar& get_cdf(size_t xi)
+    inline Scalar& get_cdf(size_t ix)
     {
-        return this->m_cdf[xi];
+        return this->m_cdf[ix];
     }
 
-    inline Scalar get_cdf(size_t xi) const
+    inline Scalar get_cdf(size_t ix) const
     {
-        return this->m_cdf[xi];
+        return this->m_cdf[ix];
     }
 
-    inline Scalar get_pdf(size_t xi) const
+    inline Scalar get_pdf(size_t ix) const
     {
-        return this->m_pdf[xi];
+        return this->m_pdf[ix];
     }
 
 };
@@ -74,25 +72,25 @@ public:
     Scalar sample(Scalar const s0, Scalar& pdf, Domain const& domain =
             CDF1Sampler<Scalar>::max_domain) const override;
 
-    inline Scalar interleaved_x(size_t xi) const override
+    inline Scalar interleaved_x(size_t ix) const override
     {
-        if(xi == 0)
+        if(ix == 0)
         {
             return m_x_min;
         }
-        else if(xi == this->m_cdf.size())
+        else if(ix == this->m_cdf.size())
         {
             return m_x_max;
         }
         else
         {
-            return m_x_min + (xi - 0.5) * (m_x_max - m_x_min) / (this->m_cdf.size() - 1);
+            return m_x_min + (ix - 0.5) * (m_x_max - m_x_min) / (this->m_cdf.size() - 1);
         }
     }
 
     Domain definition_domain() const override
     {
-        return Domain(m_x_min, m_x_max);
+        return Domain{m_x_min, m_x_max};
     }
 
 private:
@@ -156,7 +154,7 @@ public:
     {
     }
 
-    void init(GMathVec2<Scalar> const& x_range, std::vector<Scalar> const& f) override
+    void init(vec2<Scalar> const& x_range, std::vector<Scalar> const& f) override
     {
         std::vector<Scalar> x(f.size());
         Scalar const step = (x_range[1] - x_range[0]) / (f.size() - 1);
@@ -170,17 +168,17 @@ public:
 
     void init(std::vector<Scalar> const& x, std::vector<Scalar> const& f);
 
-    Scalar sample(Scalar const s0, Scalar& pdf, GMathVec2<Scalar> const& domain =
+    Scalar sample(Scalar const in_s, Scalar& pdf, vec2<Scalar> const& domain =
             CDF1Sampler<Scalar>::max_domain) const override;
 
-    inline Scalar interleaved_x(size_t xi) const override
+    inline Scalar interleaved_x(size_t ix) const override
     {
-        return m_interleaved_x[xi];
+        return m_interleaved_x[ix];
     }
 
-    Domain definition_domain() const override
+    inline Domain definition_domain() const override
     {
-        return GMathVec2<Scalar>(m_x.front(), m_x.back());
+        return vec2<Scalar>{m_x.front(), m_x.back()};
     }
 
 private:
@@ -197,11 +195,11 @@ private:
         return linear_interpolation(cdf0, cdf1, x.m_theta);
     }
 
-    inline Scalar get_pdf(Interpol<std::vector<Scalar>> const& hit_x) const
+    inline Scalar get_pdf(Interpol<std::vector<Scalar>> const& x) const
     {
-        assert(m_interleaved_x.begin() <= hit_x.m_first && hit_x.m_first < m_interleaved_x.end());
+        assert(m_interleaved_x.begin() <= x.m_first && x.m_first < m_interleaved_x.end());
 
-        size_t const idx_x = hit_x.m_first - m_interleaved_x.begin();
+        size_t const idx_x = x.m_first - m_interleaved_x.begin();
 
         return this->m_pdf[idx_x];
     }

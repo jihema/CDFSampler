@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <ostream>
 
-namespace dneg
+namespace cdf_sampler
 {
 
 /**

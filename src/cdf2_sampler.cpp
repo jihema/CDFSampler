@@ -4,10 +4,11 @@
 
 #include "cdf2_sampler.h"
 
+#include <stddef.h>
+#include <cassert>
 #include <limits>
-#include <iostream>
 
-namespace dneg
+namespace cdf_sampler
 {
 
 template<typename Scalar>
@@ -30,14 +31,14 @@ void CDF2SamplerUniform<Scalar>::init(Domain const& xy_range, size_t const x_siz
     Scalar const step_x = (m_x_max - m_x_min) / (x_size - 1);
     Scalar const step_y = (m_y_max - m_y_min) / (y_size - 1);
 
-    // First yi = 0.
+    // First iy = 0.
     {
         Scalar previous_cdf = 0.;
         Scalar const delta_y = 0.5 * step_y;
-        for (size_t xi = 0; xi < x_size; ++xi)
+        for (size_t ix = 0; ix < x_size; ++ix)
         {
             Scalar delta_x;
-            if(xi == 0 || xi == x_size - 1)
+            if(ix == 0 || ix == x_size - 1)
             {
                 delta_x = 0.5 * step_x;
             }
@@ -46,16 +47,16 @@ void CDF2SamplerUniform<Scalar>::init(Domain const& xy_range, size_t const x_siz
                 delta_x = step_x;
             }
 
-            previous_cdf = static_cast<CDF2Sampler<Scalar>*>(this)->get_cdf(xi, 0) = previous_cdf
+            previous_cdf = static_cast<CDF2Sampler<Scalar>*>(this)->get_cdf(ix, 0) = previous_cdf
                     + delta_x * delta_y
-                            * static_cast<CDF2Sampler<Scalar> const* const >(this)->get_pdf(xi, 0);
+                            * static_cast<CDF2Sampler<Scalar> const* const >(this)->get_pdf(ix, 0);
         }
     }
 
-    for (size_t yi = 1; yi < y_size; ++yi)
+    for (size_t iy = 1; iy < y_size; ++iy)
     {
         Scalar delta_y;
-        if(yi == y_size - 1)
+        if(iy == y_size - 1)
         {
             delta_y = 0.5 * step_y;
         }
@@ -65,10 +66,10 @@ void CDF2SamplerUniform<Scalar>::init(Domain const& xy_range, size_t const x_siz
         }
 
         Scalar previous_cdf_x = 0;
-        for (size_t xi = 0; xi < x_size; ++xi)
+        for (size_t ix = 0; ix < x_size; ++ix)
         {
             Scalar delta_x;
-            if(xi == 0 || xi == x_size - 1)
+            if(ix == 0 || ix == x_size - 1)
             {
                 delta_x = 0.5 * step_x;
             }
@@ -78,9 +79,9 @@ void CDF2SamplerUniform<Scalar>::init(Domain const& xy_range, size_t const x_siz
             }
 
             previous_cdf_x += delta_x * delta_y
-                    * static_cast<CDF2Sampler<Scalar>*>(this)->get_pdf(xi, yi);
-            static_cast<CDF2Sampler<Scalar>*>(this)->get_cdf(xi, yi) = static_cast<CDF2Sampler<
-                    Scalar>*>(this)->get_cdf(xi, yi - 1) + previous_cdf_x;
+                    * static_cast<CDF2Sampler<Scalar>*>(this)->get_pdf(ix, iy);
+            static_cast<CDF2Sampler<Scalar>*>(this)->get_cdf(ix, iy) = static_cast<CDF2Sampler<
+                    Scalar>*>(this)->get_cdf(ix, iy - 1) + previous_cdf_x;
         }
     }
 
@@ -88,8 +89,8 @@ void CDF2SamplerUniform<Scalar>::init(Domain const& xy_range, size_t const x_siz
 }
 
 template<typename Scalar>
-GMathVec2<Scalar> CDF2SamplerUniform<Scalar>::sample(GMathVec2<Scalar> const& sxy, Scalar& pdf,
-        GMathBbox2<Scalar> const& domain) const
+vec2<Scalar> CDF2SamplerUniform<Scalar>::sample(vec2<Scalar> const& sxy, Scalar& pdf,
+        box2<Scalar> const& domain) const
 {
     Scalar const sx = sxy[0];
     Scalar const sy = sxy[1];
@@ -97,7 +98,7 @@ GMathVec2<Scalar> CDF2SamplerUniform<Scalar>::sample(GMathVec2<Scalar> const& sx
     assert(0. <= sx && sx <= 1.);
     assert(0. <= sy && sy <= 1.);
 
-    GMathVec2<Scalar> result;
+    vec2<Scalar> result;
 
     Scalar const domain_x_min = std::max(m_x_min, domain[0][0]);
     size_t ix_min = -1;
@@ -147,10 +148,10 @@ GMathVec2<Scalar> CDF2SamplerUniform<Scalar>::sample(GMathVec2<Scalar> const& sx
         std::vector<Scalar> cdfy;
         cdfy.reserve(iy_max - iy_min + 2);
         cdfy.push_back(0.);
-        for (auto yi = iy_min; yi < iy_max; ++yi)
+        for (auto iy = iy_min; iy < iy_max; ++iy)
         {
-            Scalar const cdf0y = this->get_cdf(ix_min, yi);
-            Scalar const cdf1y = this->get_cdf(ix_max, yi);
+            Scalar const cdf0y = this->get_cdf(ix_min, iy);
+            Scalar const cdf1y = this->get_cdf(ix_max, iy);
             cdfy.push_back((cdf1y - cdf10) + (cdf00 - cdf0y));
         }
         cdfy.push_back(domain_proba);
@@ -251,65 +252,65 @@ void CDF2SamplerNonUniform<Scalar>::init(std::vector<Scalar> const& x, std::vect
     m_interleaved_x = CDFSampler<Scalar>::interleave(m_x);
     m_interleaved_y = CDFSampler<Scalar>::interleave(m_y);
 
-    // First yi = 0.
+    // First iy = 0.
     {
         Scalar previous_cdf = 0;
         Scalar const delta_y = m_y[1] - m_y[0];
-        for (size_t xi = 0; xi < m_x.size(); ++xi)
+        for (size_t ix = 0; ix < m_x.size(); ++ix)
         {
             Scalar delta_x;
-            if(xi == 0)
+            if(ix == 0)
             {
-                delta_x = m_x[xi + 1] - m_x[xi];
+                delta_x = m_x[ix + 1] - m_x[ix];
             }
-            else if(xi == m_x.size() - 1)
+            else if(ix == m_x.size() - 1)
             {
-                delta_x = m_x[xi] - m_x[xi - 1];
+                delta_x = m_x[ix] - m_x[ix - 1];
             }
             else
             {
-                delta_x = m_x[xi + 1] - m_x[xi - 1];
+                delta_x = m_x[ix + 1] - m_x[ix - 1];
             }
 
-            previous_cdf = static_cast<CDF2Sampler<Scalar>*>(this)->get_cdf(xi, 0) = previous_cdf
+            previous_cdf = static_cast<CDF2Sampler<Scalar>*>(this)->get_cdf(ix, 0) = previous_cdf
                     + 0.25 * delta_x * delta_y
-                            * static_cast<CDF2Sampler<Scalar> const* const >(this)->get_pdf(xi, 0);
+                            * static_cast<CDF2Sampler<Scalar> const* const >(this)->get_pdf(ix, 0);
         }
     }
 
-    for (size_t yi = 1; yi < m_y.size(); ++yi)
+    for (size_t iy = 1; iy < m_y.size(); ++iy)
     {
         Scalar delta_y;
-        if(yi == m_y.size() - 1)
+        if(iy == m_y.size() - 1)
         {
-            delta_y = m_y[yi] - m_y[yi - 1];
+            delta_y = m_y[iy] - m_y[iy - 1];
         }
         else
         {
-            delta_y = m_y[yi + 1] - m_y[yi - 1];
+            delta_y = m_y[iy + 1] - m_y[iy - 1];
         }
 
         Scalar previous_cdf_x = 0;
-        for (size_t xi = 0; xi < m_x.size(); ++xi)
+        for (size_t ix = 0; ix < m_x.size(); ++ix)
         {
             Scalar delta_x;
-            if(xi == 0)
+            if(ix == 0)
             {
-                delta_x = m_x[xi + 1] - m_x[xi];
+                delta_x = m_x[ix + 1] - m_x[ix];
             }
-            else if(xi == m_x.size() - 1)
+            else if(ix == m_x.size() - 1)
             {
-                delta_x = m_x[xi] - m_x[xi - 1];
+                delta_x = m_x[ix] - m_x[ix - 1];
             }
             else
             {
-                delta_x = m_x[xi + 1] - m_x[xi - 1];
+                delta_x = m_x[ix + 1] - m_x[ix - 1];
             }
 
             previous_cdf_x += 0.25 * delta_x * delta_y
-                    * static_cast<CDF2Sampler<Scalar>*>(this)->get_pdf(xi, yi);
-            static_cast<CDF2Sampler<Scalar>*>(this)->get_cdf(xi, yi) = static_cast<CDF2Sampler<
-                    Scalar>*>(this)->get_cdf(xi, yi - 1) + previous_cdf_x;
+                    * static_cast<CDF2Sampler<Scalar>*>(this)->get_pdf(ix, iy);
+            static_cast<CDF2Sampler<Scalar>*>(this)->get_cdf(ix, iy) = static_cast<CDF2Sampler<
+                    Scalar>*>(this)->get_cdf(ix, iy - 1) + previous_cdf_x;
         }
     }
 
@@ -317,8 +318,8 @@ void CDF2SamplerNonUniform<Scalar>::init(std::vector<Scalar> const& x, std::vect
 }
 
 template<typename Scalar>
-GMathVec2<Scalar> CDF2SamplerNonUniform<Scalar>::sample(GMathVec2<Scalar> const& sxy, Scalar& pdf,
-        GMathBbox2<Scalar> const& domain) const
+vec2<Scalar> CDF2SamplerNonUniform<Scalar>::sample(vec2<Scalar> const& sxy, Scalar& pdf,
+        box2<Scalar> const& domain) const
 {
     Scalar const sx = sxy[0];
     Scalar const sy = sxy[1];
@@ -326,7 +327,7 @@ GMathVec2<Scalar> CDF2SamplerNonUniform<Scalar>::sample(GMathVec2<Scalar> const&
     assert(0. <= sx && sx <= 1.);
     assert(0. <= sy && sy <= 1.);
 
-    GMathVec2<Scalar> result;
+    vec2<Scalar> result;
 
     // TODO: we could cache the following, depending only on the domain.
     Interpol<std::vector<Scalar>> const x_min = find_range(domain[0][0], m_interleaved_x);
@@ -448,8 +449,8 @@ GMathVec2<Scalar> CDF2SamplerNonUniform<Scalar>::sample(GMathVec2<Scalar> const&
 }
 
 template<typename Scalar>
-Scalar CDF2SamplerNonUniform<Scalar>::compute_pdf(GMathVec2<Scalar> const& result,
-        GMathBbox2<Scalar> const& domain) const
+Scalar CDF2SamplerNonUniform<Scalar>::compute_pdf(vec2<Scalar> const& result,
+        box2<Scalar> const& domain) const
 {
     Interpol<std::vector<Scalar>> const x_min = find_range(domain[0][0], m_interleaved_x);
     Interpol<std::vector<Scalar>> const x_max = find_range(domain[1][0], m_interleaved_x);
