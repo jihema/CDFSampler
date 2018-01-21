@@ -80,5 +80,6 @@ Scalar MonotoneCubicInterpolator<Scalar>::evaluate(Scalar x) const
 }
 
 template class MonotoneCubicInterpolator<float> ;
+template class MonotoneCubicInterpolator<double> ;
 
 }

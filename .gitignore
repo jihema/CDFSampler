@@ -1,2 +1,6 @@
-/Debug/
-/Release/
+build
+.DS_Store
+.project
+.cproject
+.settings
+

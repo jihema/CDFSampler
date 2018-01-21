@@ -208,7 +208,7 @@ public:
         return vec2<Scalar> { x, y };
     }
 
-    vec2<Scalar> base_xy(size_t ix, size_t iy) const
+    vec2<Scalar> base_xy(size_t ix, size_t iy) const override
     {
         Scalar const x = m_x_min
                 + ix * (m_x_max - m_x_min) / (this->m_x_size - 1);
