@@ -7,3 +7,5 @@ project(cdf_sampler)
 add_subdirectory(src)
 
 add_subdirectory(test)
+
+add_subdirectory(doc)

@@ -16,6 +16,9 @@
 namespace cdf_sampler
 {
 
+/**
+ * \brief Base class for 1D sampling of random variable X.
+ */
 template<typename Scalar>
 class CDF1Sampler: public CDFSampler<Scalar>
 {
@@ -26,14 +29,24 @@ public:
 
     static constexpr int dimension = 1;
 
+    CDF1Sampler()
+    {
+    }
+
     virtual ~CDF1Sampler()
     {
     }
 
+    /**
+     * To initialise a uniformly discretised pdf.
+     */
     virtual void init(Domain const& x_range, std::vector<Scalar> const& f) = 0;
 
-    virtual Scalar sample(Scalar const in_s, Scalar& pdf,
-            Domain const& domain) const = 0;
+    /**
+     * Given an input sample and a sampling domain, returns a sample of X conditionally to being in domain.
+     * The sampling point's pdf is also computed as side effect.
+     */
+    virtual Scalar sample(Scalar const in_s, Scalar& pdf, Domain const& domain) const = 0;
 
     virtual Scalar interleaved_x(size_t ix) const = 0;
 
@@ -58,6 +71,9 @@ protected:
 
 };
 
+/**
+ * \brief Sampling 1D uniform distributions.
+ */
 template<typename Scalar>
 class CDF1SamplerUniform: public CDF1Sampler<Scalar>
 {
@@ -70,8 +86,7 @@ public:
 
     void init(Domain const& x_range, std::vector<Scalar> const& f) override;
 
-    Scalar sample(Scalar const s0, Scalar& pdf, Domain const& domain =
-            CDF1Sampler<Scalar>::max_domain) const override;
+    Scalar sample(Scalar const s0, Scalar& pdf, Domain const& domain = CDF1Sampler<Scalar>::max_domain) const override;
 
     inline Scalar interleaved_x(size_t ix) const override
     {
@@ -85,9 +100,7 @@ public:
         }
         else
         {
-            return m_x_min
-                    + (ix - 0.5) * (m_x_max - m_x_min)
-                            / (this->m_cdf.size() - 1);
+            return m_x_min + (ix - 0.5) * (m_x_max - m_x_min) / (this->m_cdf.size() - 1);
         }
     }
 
@@ -123,8 +136,7 @@ private:
             return this->m_cdf.back();
         }
 
-        Scalar const scaled_x = (this->m_cdf.size() - 1) * (x - m_x_min)
-                / (m_x_max - m_x_min); // in [0, m_pdf.size()-1).
+        Scalar const scaled_x = (this->m_cdf.size() - 1) * (x - m_x_min) / (m_x_max - m_x_min); // in [0, m_pdf.size()-1).
 
         ix = std::floor(scaled_x + 0.5); // in {0, ..., m_cdf.size()-1}
 
@@ -141,14 +153,16 @@ private:
             theta = scaled_x - ix + 0.5;
         }
 
-        return linear_interpolation(ix == 0 ? 0 : this->m_cdf[ix - 1],
-                this->m_cdf[ix], theta);
+        return linear_interpolation(ix == 0 ? 0 : this->m_cdf[ix - 1], this->m_cdf[ix], theta);
     }
 
     Scalar m_x_min;
     Scalar m_x_max;
 };
 
+/**
+ * Sampling 1D non-uniform distributions.
+ */
 template<typename Scalar>
 class CDF1SamplerNonUniform: public CDF1Sampler<Scalar>
 {
@@ -160,7 +174,7 @@ public:
     }
 
     void init(vec2<Scalar> const& x_range, std::vector<Scalar> const& f)
-            override
+    override
     {
         std::vector<Scalar> x(f.size());
         Scalar const step = (x_range[1] - x_range[0]) / (f.size() - 1);
@@ -174,8 +188,8 @@ public:
 
     void init(std::vector<Scalar> const& x, std::vector<Scalar> const& f);
 
-    Scalar sample(Scalar const in_s, Scalar& pdf, vec2<Scalar> const& domain =
-            CDF1Sampler<Scalar>::max_domain) const override;
+    Scalar sample(Scalar const in_s, Scalar& pdf, vec2<Scalar> const& domain = CDF1Sampler<Scalar>::max_domain) const
+            override;
 
     inline Scalar interleaved_x(size_t ix) const override
     {
@@ -191,14 +205,11 @@ private:
 
     inline Scalar get_cdf(Interpol<std::vector<Scalar>> const& x) const
     {
-        assert(
-                x.m_first >= m_interleaved_x.begin()
-                        && x.m_first < m_interleaved_x.end() - 1);
+        assert(x.m_first >= m_interleaved_x.begin() && x.m_first < m_interleaved_x.end() - 1);
 
         size_t const xi = x.m_first - m_interleaved_x.begin();
 
-        Scalar const cdf0 =
-                (xi == 0) ? 0. : CDF1Sampler<Scalar>::get_cdf(xi - 1);
+        Scalar const cdf0 = (xi == 0) ? 0. : CDF1Sampler<Scalar>::get_cdf(xi - 1);
         Scalar const cdf1 = CDF1Sampler<Scalar>::get_cdf(xi);
 
         return linear_interpolation(cdf0, cdf1, x.m_theta);
@@ -206,9 +217,7 @@ private:
 
     inline Scalar get_pdf(Interpol<std::vector<Scalar>> const& x) const
     {
-        assert(
-                m_interleaved_x.begin() <= x.m_first
-                        && x.m_first < m_interleaved_x.end());
+        assert(m_interleaved_x.begin() <= x.m_first && x.m_first < m_interleaved_x.end());
 
         size_t const idx_x = x.m_first - m_interleaved_x.begin();
 

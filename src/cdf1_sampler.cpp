@@ -1,5 +1,5 @@
 /**
- * \file cdf_sampler.cpp
+ * \file cdf1_sampler.cpp
  */
 
 #include "cdf1_sampler.h"

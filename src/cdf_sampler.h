@@ -28,6 +28,10 @@ protected:
     {
     }
 
+    /**
+     * Computes an augmented vector of positions whose end points are the end points of x
+     * and the (x.size() - 1) inner points are the middle of intervals in x.
+     */
     static inline std::vector<Scalar> interleave(std::vector<Scalar> const& x)
     {
         std::vector<Scalar> interleaved(x.size() + 1);
@@ -42,6 +46,9 @@ protected:
         return interleaved;
     }
 
+    /**
+     * After the cdf has been computed, this divides f and F by the integral, which is kept in m_sum.
+     */
     inline void normalize()
     {
         m_sum = m_cdf.back();

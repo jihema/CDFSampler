@@ -14,7 +14,7 @@ namespace cdf_sampler
  * \brief Represents an interpolated position in a container.
  *
  * The value at that position can be computed as
- * \code{*m_first + (*(m_first + 1)- * m_first) * m_theta}.
+ * \code{*m_first + (*(m_first + 1)- * m_first) * m_theta}\endcode.
  */
 template<typename Container>
 class Interpol
