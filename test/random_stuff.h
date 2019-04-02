@@ -4,8 +4,9 @@
 
 #pragma once
 
+#include "vec.h"
+
 #include <random>
-#include "../src/vec.h"
 
 namespace cdf_sampler
 {

@@ -13,6 +13,9 @@ namespace cdf_sampler
 namespace test
 {
 
+/**
+ * \brief Records time on creation, computes duration and launch callback on destruction.
+ */
 class ScopedTimer
 {
 
@@ -26,10 +29,8 @@ public:
 
     ~ScopedTimer()
     {
-        std::chrono::high_resolution_clock::time_point const now_time =
-                std::chrono::high_resolution_clock::now();
-        int64_t const duration = std::chrono::duration_cast<
-                std::chrono::nanoseconds>(now_time - m_start_time).count();
+        std::chrono::high_resolution_clock::time_point const now_time = std::chrono::high_resolution_clock::now();
+        int64_t const duration = std::chrono::duration_cast<std::chrono::nanoseconds>(now_time - m_start_time).count();
         m_callback(duration);
     }
 

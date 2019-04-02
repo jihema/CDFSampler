@@ -28,6 +28,7 @@ public:
 
     using Domain = box2<Scalar>;
     static constexpr int dimension = 2;
+    static Domain const max_domain;
 
     virtual void init(Domain const& xy_range, size_t const x_size,
             size_t const y_size, std::vector<Scalar> const& f) = 0;

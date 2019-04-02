@@ -14,9 +14,13 @@ namespace cdf_sampler
 /**
  * \brief Base class for cdf samplers in any dimension.
  */
-template<typename Scalar>
+template<typename ScalarT>
 class CDFSampler
 {
+public:
+
+    using Scalar = ScalarT;
+
 protected:
 
     CDFSampler() :
